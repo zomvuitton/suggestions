@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Öneri Gönder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0e;
+      --surface: #141416;
+      --border: #232328;
+      --border-focus: #55555f;
+      --text: #e8e8ec;
+      --muted: #666672;
+      --accent: #e8e8ec;
+      --success: #3a3a3f;
+      --success-text: #a8a8b8;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 40px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .header-tag {
+      display: inline-block;
+      font-family: 'Syne', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* Form card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 36px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    /* Toggle */
+    .anon-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toggle-track {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: var(--border);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-track.active {
+      background: #3a3a45;
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle-track.active .toggle-thumb {
+      transform: translateX(18px);
+      background: var(--text);
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s;
+    }
+
+    .toggle-track.active ~ .toggle-label {
+      color: var(--text);
+    }
+
+    /* Name field */
+    .name-field {
+      margin-bottom: 20px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    }
+
+    .name-field.visible {
+      max-height: 80px;
+      opacity: 1;
+    }
+
+    /* Inputs */
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      padding: 14px 16px;
+      outline: none;
+      resize: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+
+    input[type="text"]::placeholder,
+    textarea::placeholder {
+      color: #3a3a45;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--border-focus);
+    }
+
+    textarea {
+      min-height: 160px;
+      line-height: 1.6;
+    }
+
+    /* Char counter */
+    .char-counter {
+      text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .char-counter.warn { color: #a06040; }
+    .char-counter.over { color: #c05050; }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 16px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:active { transform: scale(0.99); }
+    .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    /* Success state */
+    .success-msg {
+      display: none;
+      text-align: center;
+      padding: 48px 32px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .success-msg.visible { display: block; }
+
+    .success-icon {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 18px;
+    }
+
+    .success-msg h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .success-msg p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .send-another {
+      margin-top: 24px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .send-another:hover {
+      color: var(--text);
+      border-color: var(--border-focus);
+    }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      background: #1a0f0f;
+      border: 1px solid #3a1a1a;
+      color: #c08080;
+      font-size: 13px;
+      padding: 12px 16px;
+      margin-top: 12px;
+    }
+
+    .error-msg.visible { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="header-tag">Harman</div>
+      <h1>Öneri veya<br/>görüşünü paylaş.</h1>
+      <p>Her türlü geri bildirim değerlidir.<br/>İstersen anonim olarak gönderebilirsin.</p>
+    </div>
+
+    <div class="card" id="formCard">
+      <div id="formContent">
+
+        <!-- Anon toggle -->
+        <div class="anon-toggle">
+          <div class="toggle-track" id="toggleTrack" onclick="toggleAnon()">
+            <div class="toggle-thumb"></div>
+          </div>
+          <span class="toggle-label" id="toggleLabel" onclick="toggleAnon()">İsimle gönder</span>
+        </div>
+
+        <!-- Name field (hidden by default) -->
+        <div class="name-field" id="nameField">
+          <div class="field">
+            <label for="nameInput">Adın</label>
+            <input type="text" id="nameInput" placeholder="Adın Soyadın" maxlength="100" />
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div class="field">
+          <label for="msgInput">Önerin veya görüşün</label>
+          <textarea id="msgInput" placeholder="Buraya yaz..." maxlength="1000" oninput="updateCounter()"></textarea>
+          <div class="char-counter" id="charCounter">0 / 1000</div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitForm()">Gönder</button>
+        <div class="error-msg" id="errorMsg"></div>
+      </div>
+
+      <div class="success-msg" id="successMsg">
+        <div class="success-icon">✓</div>
+        <h2>Teşekkürler!</h2>
+        <p>Önerin iletildi.<br/>Zaman ayırdığın için teşekkür ederiz.</p>
+        <button class="send-another" onclick="resetForm()">Başka bir öneri gönder</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── CONFIG ──────────────────────────────────────────────
+    const SUPABASE_URL    = 'https://szqoldtcinbqjgfyptmq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6cW9sZHRjaW5icWpnZnlwdG1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNjg4MzksImV4cCI6MjA5MTY0NDgzOX0.vR81__CCC7PdiAA4an1y0xxcCDQUUjOaI5CRx8yaPfI';
+    const TABLE_NAME      = 'suggestions';
+    // ─────────────────────────────────────────────────────────
+
+    let isNamed = false;
+
+    function toggleAnon() {
+      isNamed = !isNamed;
+      const track = document.getElementById('toggleTrack');
+      const label = document.getElementById('toggleLabel');
+      const nameField = document.getElementById('nameField');
+      track.classList.toggle('active', isNamed);
+      label.textContent = isNamed ? 'İsimle gönderiyorum' : 'İsimle gönder';
+      nameField.classList.toggle('visible', isNamed);
+      if (!isNamed) document.getElementById('nameInput').value = '';
+    }
+
+    function updateCounter() {
+      const val = document.getElementById('msgInput').value.length;
+      const el  = document.getElementById('charCounter');
+      el.textContent = `${val} / 1000`;
+      el.className = 'char-counter' + (val > 950 ? ' over' : val > 800 ? ' warn' : '');
+    }
+
+    async function submitForm() {
+      const msg  = document.getElementById('msgInput').value.trim();
+      const name = document.getElementById('nameInput').value.trim();
+      const btn  = document.getElementById('submitBtn');
+      const err  = document.getElementById('errorMsg');
+
+      err.classList.remove('visible');
+
+      if (!msg) {
+        showError('Lütfen bir şeyler yaz.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Gönderiliyor...';
+
+      const payload = {
+        message: msg,
+        sender_name: isNamed && name ? name : null,
+        is_anonymous: !isNamed || !name,
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE_NAME}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const detail = await res.text();
+          throw new Error(detail || res.statusText);
+        }
+
+        document.getElementById('formContent').style.display = 'none';
+        document.getElementById('successMsg').classList.add('visible');
+
+      } catch (e) {
+        showError('Bir hata oluştu. Lütfen tekrar dene.');
+        console.error(e);
+        btn.disabled = false;
+        btn.textContent = 'Gönder';
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    function resetForm() {
+      document.getElementById('msgInput').value = '';
+      document.getElementById('nameInput').value = '';
+      document.getElementById('charCounter').textContent = '0 / 1000';
+      document.getElementById('charCounter').className = 'char-counter';
+      document.getElementById('errorMsg').classList.remove('visible');
+      document.getElementById('submitBtn').textContent = 'Gönder';
+      document.getElementById('submitBtn').disabled = false;
+      isNamed = false;
+      document.getElementById('toggleTrack').classList.remove('active');
+      document.getElementById('toggleLabel').textContent = 'İsimle gönder';
+      document.getElementById('nameField').classList.remove('visible');
+      document.getElementById('successMsg').classList.remove('visible');
+      document.getElementById('formContent').style.display = '';
+    }
+  </script>
+</body>
+</html>
